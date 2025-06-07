@@ -1,0 +1,24 @@
+App:
+  Name: employee-management-service
+  Port: 9000
+  Env: local
+  Key: PRIVATE_KEY
+
+Logger:
+  Mode: development
+  Level: debug
+  Enable: true
+
+Postgres:
+  Host: localhost
+  Port: 5432
+  DBName: secret
+  User: secret
+  Password: secret
+  SSLMode: disable
+  MaxConn:  10
+
+Observability:
+  Enable: false
+  Mode: otlp
+  OtlpEndpoint: "localhost:4317"

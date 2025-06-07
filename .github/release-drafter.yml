@@ -1,0 +1,89 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+autolabeler:
+  - label: "🧐 Database Update"
+    files:
+      - "database/**/*"
+
+  - label: "🧐 Env Update"
+    files:
+      - "config/**/*"
+
+  - label: "♻️ Sync"
+    title:
+      - "/sync/i"
+
+  - label: "🐞 Bug"
+    title:
+      - "/^fix(:|\\s)/i"
+      - "/bug/i"
+
+  - label: "🚀 Feature"
+    title:
+      - "/^feat(:|\\s)/i"
+      - "/feature/i"
+
+  - label: "🧹 Chore"
+    title:
+      - "/^chore(:|\\s)/i"
+
+  - label: "📚 Docs"
+    title:
+      - "/^docs(:|\\s)/i"
+      - "/documentation/i"
+
+  - label: "✨ Enhancement"
+    title:
+      - "/^enhance(:|\\s)/i"
+      - "/enhancement/i"
+
+categories:
+  - title: "🧐 Env Update"
+    labels:
+      - "🧐 Env Update"
+  - title: "🧐 Database Update"
+    labels:
+      - "🧐 Database Update"
+  - title: "♻️ Sync"
+    labels:
+      - "♻️ Sync"
+  - title: "🪲🔪 Bug Fix"
+    labels:
+      - "🐞 Bug"
+  - title: "🚀 New Feature"
+    labels:
+      - "🚀 Feature"
+  - title: "🧹 Chore"
+    labels:
+      - "🧹 Chore"
+  - title: "📚 Documentation"
+    labels:
+      - "📚 Docs"
+  - title: "✨ Enhancement"
+    labels:
+      - "✨ Enhancement"
+
+version-resolver:
+  major:
+    labels:
+      - "major"
+  minor:
+    labels:
+      - "minor"
+      - "📦 Feature"
+      - "🧐 Database Update"
+      - "🧐 Env Update"
+      - "✨ Enhancement"
+      - "🐞 Bug"
+  patch:
+    labels:
+      - "patch"
+
+template: |
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+  Engineers that incharge on this release:
+  $CONTRIBUTORS

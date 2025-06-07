@@ -11,19 +11,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🛎️ Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: 🧰 Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: "1.24"
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: go mod download
 
-      - name: 🛠️ Build
+      - name: Build
         run: go build ./...
 
-      - name: ✅ Run tests
+      - name: Run tests
         run: go test -v ./...
+
+      - name: Coverage report
+        run: go test -coverprofile=coverage.txt
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

@@ -1,0 +1,430 @@
+basePath: /external/api
+definitions:
+  apperror.Error:
+    properties:
+      formatted:
+        additionalProperties: {}
+        type: object
+      issues:
+        items:
+          $ref: '#/definitions/apperror.ErrorIssue'
+        type: array
+    type: object
+  apperror.ErrorIssue:
+    properties:
+      expected: {}
+      issue_code:
+        type: string
+      message:
+        type: string
+      path:
+        items:
+          type: string
+        type: array
+      received: {}
+    type: object
+  docshelper.Response-string-dtos_PayslipDataResponse-entity_ListPayslipMetadata:
+    properties:
+      data:
+        allOf:
+        - $ref: '#/definitions/resourceful.Data-string-dtos_PayslipDataResponse'
+        x-order: "2"
+      metadata:
+        allOf:
+        - $ref: '#/definitions/entity.ListPayslipMetadata'
+        x-order: "1"
+      request_id:
+        type: string
+        x-order: "0"
+    type: object
+  dtos.AttendancePeriodDataResponse:
+    properties:
+      end_date:
+        type: string
+      start_date:
+        type: string
+    type: object
+  dtos.GeneratePayrollRequest:
+    properties:
+      period_id:
+        type: string
+    required:
+    - period_id
+    type: object
+  dtos.GeneratedPayrollResponse:
+    properties:
+      generated_at:
+        type: string
+      generated_by:
+        type: string
+      payroll_id:
+        type: string
+      period_id:
+        type: string
+      total_employee:
+        type: integer
+      total_payslip:
+        type: integer
+      total_take_home_pay:
+        type: integer
+    type: object
+  dtos.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  dtos.OvertimeDataResponse:
+    properties:
+      multiplier:
+        type: number
+      overtime_hours:
+        type: string
+      overtime_pay:
+        type: integer
+      rate_per_hour:
+        type: integer
+    type: object
+  dtos.OvertimeRequest:
+    properties:
+      date:
+        type: string
+      overtime:
+        type: string
+    required:
+    - date
+    - overtime
+    type: object
+  dtos.PayslipDataResponse:
+    properties:
+      attendance_days:
+        type: integer
+      attendance_pay:
+        type: integer
+      attendance_period:
+        $ref: '#/definitions/dtos.AttendancePeriodDataResponse'
+      base_salary:
+        type: integer
+      id:
+        type: string
+      overtime:
+        $ref: '#/definitions/dtos.OvertimeDataResponse'
+      reimbursement_total:
+        type: integer
+      reimbursements:
+        items:
+          $ref: '#/definitions/dtos.ReimbursementDataResponse'
+        type: array
+      total_take_home_pay:
+        type: integer
+      user:
+        $ref: '#/definitions/dtos.UserDataResponse'
+      working_days:
+        type: integer
+    type: object
+  dtos.ReimbursementDataResponse:
+    properties:
+      amount:
+        type: integer
+      description:
+        $ref: '#/definitions/optional.String'
+      reimbursement_date:
+        type: string
+    type: object
+  dtos.ReimbursementRequest:
+    properties:
+      amount:
+        type: integer
+      date:
+        type: string
+      description:
+        $ref: '#/definitions/optional.String'
+    required:
+    - amount
+    - date
+    type: object
+  dtos.Response:
+    properties:
+      data: {}
+      errors:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        type: object
+      request_id:
+        type: string
+    type: object
+  dtos.UserDataResponse:
+    properties:
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  entity.ListPayslipMetadata:
+    properties:
+      count:
+        type: integer
+      page:
+        type: integer
+      total_count:
+        type: integer
+      total_page:
+        type: integer
+      total_take_home_pay:
+        type: integer
+    type: object
+  optional.String:
+    type: object
+  resourceful.Data-string-dtos_PayslipDataResponse:
+    properties:
+      ids:
+        items:
+          type: string
+        type: array
+      paginated_results:
+        items:
+          $ref: '#/definitions/dtos.PayslipDataResponse'
+        type: array
+    type: object
+host: localhost:9000
+info:
+  contact: {}
+  description: Employee Management Service API Docs
+  title: Employee Management Service
+  version: "1.0"
+paths:
+  /v1/attendance:
+    post:
+      consumes:
+      - application/json
+      description: Submit attendance for the current day
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/dtos.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperror.Error'
+      security:
+      - BearerAuth: []
+      summary: Submit Attendance
+      tags:
+      - Attendance
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: User login to get access token
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access Token Response
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperror.Error'
+      security:
+      - NoAuth: []
+      summary: Login
+      tags:
+      - Auth
+  /v1/overtime:
+    post:
+      consumes:
+      - application/json
+      description: Submit an overtime request
+      parameters:
+      - description: Overtime Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.OvertimeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/dtos.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperror.Error'
+      security:
+      - BearerAuth: []
+      summary: Submit Overtime
+      tags:
+      - Overtime
+  /v1/payroll:
+    post:
+      consumes:
+      - application/json
+      description: Generate payroll for a specific period
+      parameters:
+      - description: Generate Payroll Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.GeneratePayrollRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Generated Payroll Response
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.GeneratedPayrollResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperror.Error'
+      security:
+      - BearerAuth: []
+      summary: Generate Payroll
+      tags:
+      - Payroll
+  /v1/payroll/{payrollId}/payslip:
+    get:
+      consumes:
+      - application/json
+      description: Show payslip for a specific payroll
+      parameters:
+      - description: Payroll ID
+        in: path
+        name: payrollId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payslip Response
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dtos.PayslipDataResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperror.Error'
+      security:
+      - BearerAuth: []
+      summary: Show Payslip
+      tags:
+      - Payroll
+  /v1/payroll/{payrollId}/payslips:
+    get:
+      consumes:
+      - application/json
+      description: List payslips for a specific payroll
+      parameters:
+      - description: Payroll ID
+        in: path
+        name: payrollId
+        required: true
+        type: string
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: offset
+        description: Mode
+        in: query
+        name: mode
+        type: string
+      - description: Cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of Payslips
+          schema:
+            $ref: '#/definitions/docshelper.Response-string-dtos_PayslipDataResponse-entity_ListPayslipMetadata'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperror.Error'
+      summary: List Payslips
+      tags:
+      - Payroll
+  /v1/reimbursement:
+    post:
+      consumes:
+      - application/json
+      description: Submit a reimbursement request
+      parameters:
+      - description: Reimbursement Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ReimbursementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/dtos.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/apperror.Error'
+      security:
+      - BearerAuth: []
+      summary: Submit Reimbursement
+      tags:
+      - Reimbursement
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

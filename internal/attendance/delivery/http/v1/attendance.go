@@ -20,6 +20,15 @@ func NewAttendanceHandler(uc attendance.UseCase) *AttendanceHandler {
 	}
 }
 
+// @Summary      Submit Attendance
+// @Description  Submit attendance for the current day
+// @Tags         Attendance
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} dtos.Response "Success"
+// @Failure      400 {object} apperror.Error "Bad Request"
+// @Router       /v1/attendance [POST]
+// @Security     BearerAuth
 func (h *AttendanceHandler) SubmitAttendance(c *fiber.Ctx) error {
 	ctx, span := instrumentation.NewTraceSpan(
 		c.UserContext(),

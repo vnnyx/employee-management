@@ -1,8 +1,9 @@
 package resourceful
 
 type ResourceResponse[IDType, Model any] struct {
-	Metadata any                 `json:"metadata"`
-	Data     Data[IDType, Model] `json:"data"`
+	RequestID string              `json:"request_id"`
+	Metadata  any                 `json:"metadata"`
+	Data      Data[IDType, Model] `json:"data"`
 }
 
 type Data[IDType, Model any] struct {

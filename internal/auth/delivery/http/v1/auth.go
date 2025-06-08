@@ -21,6 +21,16 @@ func NewAuthHandler(uc auth.UseCase) *AuthHandler {
 	}
 }
 
+// @Summary      Login
+// @Description  User login to get access token
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.LoginRequest true "Login Request"
+// @Success      200 {object} dtos.Response{data=map[string]string} "Access Token Response"
+// @Failure      400 {object} apperror.Error "Bad Request"
+// @Router       /v1/auth/login [POST]
+// @Security     NoAuth
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	ctx, span := instrumentation.NewTraceSpan(
 		c.UserContext(),

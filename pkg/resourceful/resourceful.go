@@ -64,9 +64,10 @@ func (r *Resource[IDType, Model]) SetMetadata(metadata any) {
 	r.metadata = metadata
 }
 
-func (r *Resource[IDType, Model]) Response() *ResourceResponse[IDType, Model] {
+func (r *Resource[IDType, Model]) Response(requestID string) *ResourceResponse[IDType, Model] {
 	resp := &ResourceResponse[IDType, Model]{
-		Metadata: r.metadata,
+		RequestID: requestID,
+		Metadata:  r.metadata,
 		Data: Data[IDType, Model]{
 			PaginatedResults: r.result.PaginationResult,
 			IDs:              r.result.IDs,

@@ -20,6 +20,16 @@ func NewOvertimeHandler(overtimeUC overtime.UseCase) *OvertimeHandler {
 	}
 }
 
+// @Summary      Submit Overtime
+// @Description  Submit an overtime request
+// @Tags         Overtime
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.OvertimeRequest true "Overtime Request"
+// @Success      200 {object} dtos.Response "Success"
+// @Failure      400 {object} apperror.Error "Bad Request"
+// @Router       /v1/overtime [POST]
+// @Security     BearerAuth
 func (h *OvertimeHandler) SubmitOvertime(c *fiber.Ctx) error {
 	ctx, span := instrumentation.NewTraceSpan(
 		c.UserContext(),

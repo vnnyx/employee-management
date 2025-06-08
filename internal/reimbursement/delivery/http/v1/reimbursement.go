@@ -20,6 +20,16 @@ func NewReimbursementHandler(reimbursementUC reimbursement.UseCase) *Reimburseme
 	}
 }
 
+// @Summary      Submit Reimbursement
+// @Description  Submit a reimbursement request
+// @Tags         Reimbursement
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.ReimbursementRequest true "Reimbursement Request"
+// @Success      200 {object} dtos.Response "Success"
+// @Failure      400 {object} apperror.Error "Bad Request"
+// @Router       /v1/reimbursement [POST]
+// @Security     BearerAuth
 func (h *ReimbursementHandler) SubmitReimbursement(c *fiber.Ctx) error {
 	ctx, span := instrumentation.NewTraceSpan(
 		c.UserContext(),

@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	_ "github.com/vnnyx/employee-management/docs/helper"
 	authCredential "github.com/vnnyx/employee-management/internal/auth/entity"
 	"github.com/vnnyx/employee-management/internal/constants"
 	"github.com/vnnyx/employee-management/internal/dtos"
@@ -22,6 +23,16 @@ func NewPayrollHandler(uc payroll.UseCase) *PayrollHandler {
 	}
 }
 
+// @Summary      Generate Payroll
+// @Description  Generate payroll for a specific period
+// @Tags         Payroll
+// @Accept       json
+// @Produce      json
+// @Param        request body dtos.GeneratePayrollRequest true "Generate Payroll Request"
+// @Success      201 {object} dtos.Response{request,data=dtos.GeneratedPayrollResponse} "Generated Payroll Response"
+// @Failure      400 {object} apperror.Error "Bad Request"
+// @Router        /v1/payroll [POST]
+// @Security     BearerAuth
 func (h *PayrollHandler) GeneratePayroll(c *fiber.Ctx) error {
 	ctx, span := instrumentation.NewTraceSpan(
 		c.UserContext(),
@@ -49,6 +60,16 @@ func (h *PayrollHandler) GeneratePayroll(c *fiber.Ctx) error {
 	)
 }
 
+// @Summary      Show Payslip
+// @Description  Show payslip for a specific payroll
+// @Tags         Payroll
+// @Accept       json
+// @Produce      json
+// @Param        payrollId path string true "Payroll ID"
+// @Success      200 {object} dtos.Response{data=dtos.PayslipDataResponse} "Payslip Response"
+// @Failure      400 {object} apperror.Error "Bad Request"
+// @Router       /v1/payroll/{payrollId}/payslip [GET]
+// @Security     BearerAuth
 func (h *PayrollHandler) ShowPayslip(c *fiber.Ctx) error {
 	ctx, span := instrumentation.NewTraceSpan(
 		c.UserContext(),
@@ -79,6 +100,19 @@ func (h *PayrollHandler) ShowPayslip(c *fiber.Ctx) error {
 	)
 }
 
+// @Summary      List Payslips
+// @Description  List payslips for a specific payroll
+// @Tags         Payroll
+// @Accept       json
+// @Produce      json
+// @Param        payrollId path string true "Payroll ID"
+// @Param        limit query int false "Limit" default(10)
+// @Param        page query int false "Page" default(1)
+// @Param        mode query string false "Mode" default(offset)
+// @Param        cursor query string false "Cursor"
+// @Success      200 {object} docshelper.Response[string, dtos.PayslipDataResponse, entity.ListPayslipMetadata] "List of Payslips"
+// @Failure      400 {object} apperror.Error "Bad Request"
+// @Router       /v1/payroll/{payrollId}/payslips [GET]
 func (h *PayrollHandler) ListPayslips(c *fiber.Ctx) error {
 	ctx, span := instrumentation.NewTraceSpan(
 		c.UserContext(),
@@ -118,5 +152,5 @@ func (h *PayrollHandler) ListPayslips(c *fiber.Ctx) error {
 		return errors.Wrap(err, "PayrollHandler().ListPayslips().uc.ListPayslips()")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(data.Response())
+	return c.Status(fiber.StatusOK).JSON(data.Response(authCredential.RequestID))
 }

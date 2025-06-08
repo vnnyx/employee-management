@@ -11,6 +11,7 @@ A modular, scalable backend system for managing employee data, attendance, payro
 - Reimbursement requests
 - Audit logging
 - RESTful API with Swagger documentation
+- Redis caching for improved performance
 
 ## Project Structure
 
@@ -45,6 +46,7 @@ This structure allows each module (attendance, payroll, etc.) to be developed, t
 
 - Go 1.20+
 - PostgreSQL (or your configured DB)
+- Redis
 
 ### Setup
 

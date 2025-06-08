@@ -3,12 +3,15 @@ package api
 import (
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	configapi "github.com/vnnyx/employee-management/config/api"
 	_ "github.com/vnnyx/employee-management/docs"
 	"github.com/vnnyx/employee-management/internal/server"
 	"github.com/vnnyx/employee-management/pkg/database"
 	"github.com/vnnyx/employee-management/pkg/logger"
+	"github.com/vnnyx/employee-management/pkg/redis"
 )
 
 // @title						Employee Management Service
@@ -44,6 +47,16 @@ func Run() {
 	}
 	defer func() { _ = appLogger.Sync() }()
 
+	redisClient, err := redis.GetRedisConnection(redis.RedisConfig{
+		Host:     cfg.Redis.Host,
+		Port:     cfg.Redis.Port,
+		Password: cfg.Redis.Password,
+		Database: cfg.Redis.Database,
+	})
+	if err != nil {
+		log.Fatalf("Error on connecting to Redis: %s", err)
+	}
+
 	db, err := database.GetPostgresConnection(database.PostgresConfig{
 		Host:                cfg.Postgres.Host,
 		Port:                cfg.Postgres.Port,
@@ -62,6 +75,13 @@ func Run() {
 	if err = server.Run(); err != nil {
 		log.Fatal(err)
 	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-quit
+		redisClient.Close()
+	}()
 
 	appLogger.Info("App stopped")
 }

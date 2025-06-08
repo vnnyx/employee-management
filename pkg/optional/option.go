@@ -148,3 +148,8 @@ func (o Option[T]) IsZero() bool {
 	var zero T
 	return reflect.DeepEqual(*o.value, zero)
 }
+
+func (o Option[T]) SetAndReturn(v T) Option[T] {
+	o.Set(v)
+	return o
+}

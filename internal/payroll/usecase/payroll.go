@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -109,8 +108,6 @@ func (u *payrollUseCase) GeneratePayroll(ctx context.Context, authCredential aut
 		if err != nil {
 			return errors.Wrap(err, "PayrollUseCase.GeneratePayroll().FindAllUsers()")
 		}
-
-		fmt.Println("length of users:", len(users.List))
 
 		attendances, err := attendanceRepoTx.FindAttendanceByPeriod(ctx, period.StartDate, period.EndDate, attendanceEntity.FindAttendanceOptions{
 			PessimisticLock: true,

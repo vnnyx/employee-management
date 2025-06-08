@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/vnnyx/employee-management/pkg/optional"
-	// reimbursementEntity "github.com/vnnyx/employee-management/internal/reimbursement/entity"
-	// overtimeEntity "github.com/vnnyx/employee-management/internal/overtime/entity"
 )
 
 type Payroll struct {

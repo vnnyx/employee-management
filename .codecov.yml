@@ -12,3 +12,12 @@ coverage:
         threshold: 1%
         if_not_found: success
         informational: false
+  ignore:
+    - "**/mock/**"
+    - "./database/**"
+    - "**/mocks/**"
+    - "./cmd/**"
+    - "./main.go"
+    - "./pkg/logger/**"
+    - "./pkg/observability/**"
+    - "./pkg/resourceful/**"

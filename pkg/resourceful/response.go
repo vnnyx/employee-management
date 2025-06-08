@@ -1,11 +1,11 @@
 package resourceful
 
-type Response[IDType, DataModel any] struct {
-	Metadata any                        `json:"metadata"`
-	Result   *Result[IDType, DataModel] `json:"result"`
+type ResourceResponse[IDType, Model any] struct {
+	Metadata any                 `json:"metadata"`
+	Data     Data[IDType, Model] `json:"data"`
 }
 
-type Metadata struct {
-	TotalCount int    `json:"total_count"`
-	NextCursor string `json:"next_cursor,omitempty"`
+type Data[IDType, Model any] struct {
+	PaginatedResults []Model  `json:"paginated_results"`
+	IDs              []IDType `json:"ids"`
 }

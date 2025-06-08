@@ -184,11 +184,46 @@ func (r *payrollRepository) FindPayslipByPayrollID(ctx context.Context, payrollI
 	var result entity.FindPayslipResult
 
 	query := findPayslipByPayrollIDQuery
+
+	args := []any{payrollID}
+	if len(opts) > 0 && opts[0].ResourcefulParameter != nil {
+		// Set limit and offset
+		limit := opts[0].ResourcefulParameter.Limit.MustGet()
+		page := opts[0].ResourcefulParameter.Page.MustGet()
+		offset := (page - 1) * limit
+
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, limit, offset)
+
+		// Select all id
+		idsQuery := "SELECT id FROM payslips WHERE payroll_id = $1"
+		var ids []string
+		err := pgxscan.Select(ctx, r.db, &ids, idsQuery, payrollID)
+		if err != nil {
+			return result, errors.Wrap(err, constants.ErrWrapPgxscanSelect)
+		}
+
+		// Total take home pay
+		totalQuery := "SELECT SUM(total_take_home) FROM payslips WHERE payroll_id = $1"
+		var totalTakeHome int64
+		err = pgxscan.Get(ctx, r.db, &totalTakeHome, totalQuery, payrollID)
+		if err != nil {
+			return result, errors.Wrap(err, constants.ErrWrapPgxscanGet)
+		}
+
+		opts[0].ResourcefulParameter.SetAdditionalData(entity.ListPayslipMetadata{
+			TotalCount:    int64(len(ids)),
+			TotalTakeHome: totalTakeHome,
+			IDs:           ids,
+		})
+	}
+
 	if len(opts) > 0 && opts[0].PessimisticLock {
 		query += " FOR UPDATE"
 	}
 
-	rows, err := r.db.Query(ctx, query, payrollID)
+	query = database.Rebind(query)
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return result, errors.Wrap(err, constants.ErrWrapPgxQuery)
 	}

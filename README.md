@@ -118,13 +118,13 @@ make migrate-up DB_USER=admin DB_PASS=secret DB_NAME=employee_management
 
 This project includes a k6 load testing script (`k6.js`) to benchmark API performance and concurrency.
 
-Example k6 report:
+k6 report:
 
-![k6 Report](https://imgur.com/a/f8MKiUS.png)
+![k6 Report](https://i.imgur.com/8YbYUl6.png)
 
 Resource usage visualization (memory & CPU):
 
-![Resource Usage](https://imgur.com/a/XLPRyxZ.png)
+![Resource Usage](https://i.imgur.com/Nvqbkf7.png)
 
 To run the test:
 

@@ -114,6 +114,26 @@ make migrate-up DB_USER=admin DB_PASS=secret DB_NAME=employee_management
 - Swagger UI available at `/swagger` endpoint when the server is running.
 - See `docs/swagger.yaml` for the OpenAPI spec.
 
+## Performance Testing
+
+This project includes a k6 load testing script (`k6.js`) to benchmark API performance and concurrency.
+
+Example k6 report:
+
+![k6 Report](https://imgur.com/a/f8MKiUS.png)
+
+Resource usage visualization (memory & CPU):
+
+![Resource Usage](https://imgur.com/a/XLPRyxZ.png)
+
+To run the test:
+
+```sh
+k6 run k6.js
+```
+
+You can adjust the number of virtual users and duration in the script as needed.
+
 ## TODO
 
 - [ ] Implement cursor-based pagination.

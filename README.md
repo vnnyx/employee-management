@@ -120,11 +120,11 @@ This project includes a k6 load testing script (`k6.js`) to benchmark API perfor
 
 Example k6 report:
 
-![k6 Report](https://imgur.com/a/f8MKiUS)
+![k6 Report](https://imgur.com/a/f8MKiUS.png)
 
 Resource usage visualization (memory & CPU):
 
-![Resource Usage](https://imgur.com/a/XLPRyxZ)
+![Resource Usage](https://imgur.com/a/XLPRyxZ.png)
 
 To run the test:
 

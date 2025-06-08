@@ -5,11 +5,21 @@ import (
 	"os"
 
 	configapi "github.com/vnnyx/employee-management/config/api"
+	_ "github.com/vnnyx/employee-management/docs"
 	"github.com/vnnyx/employee-management/internal/server"
 	"github.com/vnnyx/employee-management/pkg/database"
 	"github.com/vnnyx/employee-management/pkg/logger"
 )
 
+// @title						Employee Management Service
+// @version					1.0
+// @description				Employee Management Service API Docs
+// @Schemes					http
+// @host						localhost:9000
+// @BasePath					/external/api
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
 func Run() {
 	log.Println("Starting app")
 

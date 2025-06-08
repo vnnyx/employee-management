@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/pkg/errors"
+	"github.com/redis/go-redis/v9"
 	"github.com/vnnyx/employee-management/internal/attendance"
 	attendanceEntity "github.com/vnnyx/employee-management/internal/attendance/entity"
 	authCredential "github.com/vnnyx/employee-management/internal/auth/entity"
@@ -25,6 +26,7 @@ import (
 	"github.com/vnnyx/employee-management/pkg/iso8601"
 	"github.com/vnnyx/employee-management/pkg/observability/instrumentation"
 	"github.com/vnnyx/employee-management/pkg/optional"
+	redisc "github.com/vnnyx/employee-management/pkg/redis"
 	"github.com/vnnyx/employee-management/pkg/resourceful"
 )
 
@@ -371,6 +373,17 @@ func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCr
 		)
 	}
 
+	// Try get from cache first
+	key := resourceful.GetCacheKey(resourceful.ResourceTypePayslip, payrollID, *resource.Parameter)
+	resourceCache, err := redisc.GetAndUnmarshal[resourceful.Resource[string, dtos.PayslipDataResponse]](ctx, key)
+	if err != nil {
+		if err != redis.Nil {
+			return nil, errors.Wrap(err, "PayrollUseCase.IndexPayslips().GetAndUnmarshal()")
+		}
+	} else {
+		return &resourceCache, nil
+	}
+
 	users, err := u.userRepo.FindAllUsers(ctx, userEntity.FindUserOptions{
 		PessimisticLock: true,
 	})
@@ -476,6 +489,12 @@ func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCr
 	listPayslipMetadata.TotalPage = int64(math.Ceil(float64(listPayslipMetadata.TotalCount) / float64(resource.Parameter.Limit.MustGet())))
 
 	resource.SetMetadata(listPayslipMetadata)
+
+	// Store the resource in cache
+	err = redisc.SetWithExpiration(ctx, key, resource, 7*24*time.Hour)
+	if err != nil {
+		return nil, errors.Wrap(err, "PayrollUseCase.ListPayslips().SetWithExpiration()")
+	}
 
 	return resource, nil
 }

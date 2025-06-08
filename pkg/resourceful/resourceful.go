@@ -2,9 +2,16 @@ package resourceful
 
 import (
 	"encoding/base64"
+	"fmt"
 
 	"github.com/goccy/go-json"
 	"github.com/vnnyx/employee-management/pkg/optional"
+)
+
+type ResourceType string
+
+const (
+	ResourceTypePayslip ResourceType = "payslip"
 )
 
 type Mode string
@@ -16,8 +23,8 @@ const (
 
 type Resource[IDType, Model any] struct {
 	Parameter *Parameter
-	result    *Result[IDType, Model]
-	metadata  any
+	Result    *Result[IDType, Model]
+	Metadata  any
 }
 
 type Parameter struct {
@@ -52,25 +59,25 @@ func NewResource[IDType, Model any](parameter *Parameter) *Resource[IDType, Mode
 
 	return &Resource[IDType, Model]{
 		Parameter: parameter,
-		result:    &Result[IDType, Model]{},
+		Result:    &Result[IDType, Model]{},
 	}
 }
 
 func (r *Resource[IDType, Model]) SetResult(result Result[IDType, Model]) {
-	r.result = &result
+	r.Result = &result
 }
 
 func (r *Resource[IDType, Model]) SetMetadata(metadata any) {
-	r.metadata = metadata
+	r.Metadata = metadata
 }
 
 func (r *Resource[IDType, Model]) Response(requestID string) *ResourceResponse[IDType, Model] {
 	resp := &ResourceResponse[IDType, Model]{
 		RequestID: requestID,
-		Metadata:  r.metadata,
+		Metadata:  r.Metadata,
 		Data: Data[IDType, Model]{
-			PaginatedResults: r.result.PaginationResult,
-			IDs:              r.result.IDs,
+			PaginatedResults: r.Result.PaginationResult,
+			IDs:              r.Result.IDs,
 		},
 	}
 
@@ -202,4 +209,25 @@ func (p *Parameter) GetAdditionalData() any {
 		return nil
 	}
 	return p.additionalData
+}
+
+func (p *Parameter) GetParameter() *Parameter {
+	if p == nil {
+		return &Parameter{}
+	}
+	return p
+}
+
+func GetCacheKey(resourceName ResourceType, id any, parameter Parameter) string {
+	if parameter.Mode == ModeCursor {
+		cursor, err := EncodeCursor(parameter.Cursor)
+		if err != nil {
+			return fmt.Sprintf("%s:%v", resourceName, id)
+		}
+		return fmt.Sprintf("%s:%v:%s", resourceName, id, cursor.MustGet())
+	} else if parameter.Mode == ModeOffset {
+		return fmt.Sprintf("%s:%v:%d:%d", resourceName, id, parameter.Limit.MustGet(), parameter.Page.MustGet())
+	} else {
+		panic(fmt.Sprintf("unknown mode %s", parameter.Mode))
+	}
 }

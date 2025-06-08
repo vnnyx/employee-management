@@ -18,6 +18,7 @@ type Config struct {
 	Logger        LoggerConfig
 	Postgres      PostgresConfig
 	Observability ObservabilityConfig
+	Redis         RedisConfig
 }
 
 func (c Config) Validate() error {
@@ -26,6 +27,7 @@ func (c Config) Validate() error {
 		validation.Field(&c.Logger),
 		validation.Field(&c.Postgres),
 		validation.Field(&c.Observability),
+		validation.Field(&c.Redis),
 	)
 }
 
@@ -92,6 +94,21 @@ func (oc ObservabilityConfig) Validate() error {
 		validation.Field(&oc.Enable, validation.NotNil),
 		validation.Field(&oc.Mode, validation.Required, validation.In("otlp", "jaeger", "zipkin")),
 		validation.Field(&oc.Enable, validation.NotNil),
+	)
+}
+
+type RedisConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int64  `mapstructure:"port"`
+	Password string `mapstructure:"password"`
+	Database int64  `mapstructure:"database"`
+}
+
+func (rc RedisConfig) Validate() error {
+	return validation.ValidateStruct(&rc,
+		validation.Field(&rc.Host, validation.Required),
+		validation.Field(&rc.Port, validation.Required),
+		validation.Field(&rc.Database, validation.Min(0), validation.Max(15)),
 	)
 }
 

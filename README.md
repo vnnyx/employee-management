@@ -146,6 +146,10 @@ You can adjust the number of virtual users and duration in the script as needed.
 4. Push to the branch (`git push origin feature/YourFeature`)
 5. Open a pull request
 
+## Release Notes
+
+Patch notes and release history are available on the [GitHub Releases page](https://github.com/vnnyx/employee-management/releases). Please check there for details on new features, improvements, and bug fixes in each version.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

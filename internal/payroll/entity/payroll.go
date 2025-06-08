@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/vnnyx/employee-management/pkg/optional"
+	"github.com/vnnyx/employee-management/pkg/resourceful"
 )
 
 type Payroll struct {
@@ -118,7 +119,8 @@ type MappedOptions struct {
 }
 
 type FindPayslipOptions struct {
-	PessimisticLock bool
+	PessimisticLock      bool
+	ResourcefulParameter *resourceful.Parameter
 	*MappedOptions
 }
 
@@ -127,4 +129,13 @@ type FindPayslipResult struct {
 	Mapped   map[any][]Payslip
 	IsMapped bool
 	MappedBy MappedBy
+}
+
+type ListPayslipMetadata struct {
+	Count         int64    `json:"count"`
+	Page          int64    `json:"page"`
+	TotalCount    int64    `json:"total_count"`
+	TotalPage     int64    `json:"total_page"`
+	TotalTakeHome int64    `json:"total_take_home_pay"`
+	IDs           []string `json:"-"`
 }

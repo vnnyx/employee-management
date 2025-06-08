@@ -1,6 +1,10 @@
 package optional
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+	"strconv"
+)
 
 type Int64 struct {
 	Option[int64]
@@ -50,6 +54,20 @@ func (i *Int64) Scan(value any) error {
 	return nil
 }
 
+func (i *Int64) UnmarshalText(text []byte) error {
+	str := string(text)
+	if str == "" {
+		i.SetEmpty()
+		return nil
+	}
+	v, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		return fmt.Errorf("optional.Int64: cannot parse '%s' as int64: %w", str, err)
+	}
+	i.Set(v)
+	return nil
+}
+
 type Int32 struct {
 	Option[int32]
 }
@@ -95,5 +113,19 @@ func (i *Int32) Scan(value any) error {
 		i.Set(int32(sqlInt.Int64))
 	}
 
+	return nil
+}
+
+func (i *Int32) UnmarshalText(text []byte) error {
+	str := string(text)
+	if str == "" {
+		i.SetEmpty()
+		return nil
+	}
+	v, err := strconv.ParseInt(str, 10, 32)
+	if err != nil {
+		return fmt.Errorf("optional.Int32: cannot parse '%s' as int32: %w", str, err)
+	}
+	i.Set(int32(v))
 	return nil
 }

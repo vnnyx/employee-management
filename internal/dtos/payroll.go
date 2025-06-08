@@ -80,33 +80,16 @@ func NewShowPayslipResponse(data *entity.PayslipData) *PayslipDataResponse {
 	}
 }
 
-type ListPayslipResponse struct {
-	TotalTakeHome int64
-	PayslipsData  []PayslipDataResponse
+func NewListPayslipResponse(listPayslip []entity.PayslipData) []PayslipDataResponse {
+	payslipResponses := make([]PayslipDataResponse, len(listPayslip))
+	for i, payslip := range listPayslip {
+		payslipResponses[i] = *NewShowPayslipResponse(&payslip)
+	}
+	return payslipResponses
 }
 
-func NewListPayslipsResponse(data *entity.ListPayslips) *ListPayslipResponse {
-	payslips := make([]PayslipDataResponse, len(data.PayslipsData))
-	for i, p := range data.PayslipsData {
-		payslips[i] = PayslipDataResponse{
-			ID:                 p.ID,
-			User:               UserDataResponse{ID: p.User.ID, Username: p.User.Username},
-			AttendancePeriod:   AttendancePeriodDataResponse{StartDate: p.AttendancePeriod.StartDate, EndDate: p.AttendancePeriod.EndDate},
-			BaseSalary:         p.BaseSalary,
-			WorkingDays:        p.WorkingDays,
-			AttendanceDays:     p.AttendanceDays,
-			AttendancePay:      p.AttendancePay,
-			Overtime:           OvertimeDataResponse{OvertimeHours: p.Overtime.OvertimeHours, RatePerHour: p.Overtime.RatePerHour, Multiplier: p.Overtime.Multiplier, OvertimePay: p.Overtime.OvertimePay},
-			Reimbursements:     newReimbursementDataResponses(p.Reimbursements),
-			ReimbursementTotal: p.ReimbursementTotal,
-			TotalTakeHome:      p.TotalTakeHome,
-		}
-	}
-
-	return &ListPayslipResponse{
-		TotalTakeHome: data.TotalTakeHome,
-		PayslipsData:  payslips,
-	}
+type AdditionalPayslipInformationResponse struct {
+	TotalTakeHome int64 `json:"total_take_home_pay"`
 }
 
 func newReimbursementDataResponses(reimbursements []entity.ReimbursementData) []ReimbursementDataResponse {
@@ -119,4 +102,11 @@ func newReimbursementDataResponses(reimbursements []entity.ReimbursementData) []
 		}
 	}
 	return reimbursementResponses
+}
+
+type ListPayslipsRequest struct {
+	Page   optional.Int64  `query:"page"`
+	Limit  optional.Int64  `query:"limit"`
+	Mode   optional.String `query:"mode"`
+	Cursor optional.String `query:"cursor"`
 }

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ import (
 	"github.com/vnnyx/employee-management/internal/attendance"
 	attendanceEntity "github.com/vnnyx/employee-management/internal/attendance/entity"
 	authCredential "github.com/vnnyx/employee-management/internal/auth/entity"
+	"github.com/vnnyx/employee-management/internal/dtos"
 	"github.com/vnnyx/employee-management/internal/overtime"
 	overtimeEntity "github.com/vnnyx/employee-management/internal/overtime/entity"
 	"github.com/vnnyx/employee-management/internal/payroll"
@@ -23,6 +25,7 @@ import (
 	"github.com/vnnyx/employee-management/pkg/iso8601"
 	"github.com/vnnyx/employee-management/pkg/observability/instrumentation"
 	"github.com/vnnyx/employee-management/pkg/optional"
+	"github.com/vnnyx/employee-management/pkg/resourceful"
 )
 
 type payrollUseCase struct {
@@ -352,17 +355,15 @@ func (u *payrollUseCase) ShowPayslip(ctx context.Context, authCredential authCre
 	}, nil
 }
 
-func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCredential.Credential, payrollID string) (entity.ListPayslips, error) {
+func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCredential.Credential, payrollID string, resource *resourceful.Resource[string, dtos.PayslipDataResponse]) (*resourceful.Resource[string, dtos.PayslipDataResponse], error) {
 	ctx, span := instrumentation.NewTraceSpan(
 		ctx,
 		"PayrollUseCase.ListPayslips()",
 	)
 	defer span.End()
 
-	var payslipsData entity.ListPayslips
-
 	if !*authCredential.IsAdmin {
-		return payslipsData, apperror.Forbidden(
+		return nil, apperror.Forbidden(
 			apperror.AppError{
 				IssueCode: entity.PayrollNotAuthorized,
 				Message:   entity.GetErrorMessageByIssueCode(entity.PayrollNotAuthorized),
@@ -374,7 +375,7 @@ func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCr
 		PessimisticLock: true,
 	})
 	if err != nil {
-		return payslipsData, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindAllUsers()")
+		return nil, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindAllUsers()")
 	}
 
 	payslips, err := u.payrollRepo.FindPayslipByPayrollID(ctx, payrollID, entity.FindPayslipOptions{
@@ -382,17 +383,18 @@ func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCr
 		MappedOptions: &entity.MappedOptions{
 			MappedBy: entity.MappedByUserID,
 		},
+		ResourcefulParameter: resource.Parameter,
 	})
 	if err != nil {
-		return payslipsData, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindPayslipByPayrollID()")
+		return nil, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindPayslipByPayrollID()")
 	}
 
 	period, err := u.attendanceRepo.FindAttendancePeriodByPayrollID(ctx, payrollID)
 	if err != nil {
-		return payslipsData, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindAttendancePeriodByPayrollID()")
+		return nil, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindAttendancePeriodByPayrollID()")
 	}
 	if period == nil {
-		return payslipsData, apperror.NotFound(
+		return nil, apperror.NotFound(
 			apperror.AppError{
 				IssueCode: entity.AttendancePeriodNotFound,
 				Message:   entity.GetErrorMessageByIssueCode(entity.AttendancePeriodNotFound),
@@ -408,13 +410,10 @@ func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCr
 		},
 	})
 	if err != nil {
-		return payslipsData, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindReimbursementByPeriod()")
+		return nil, errors.Wrap(err, "PayrollUseCase.IndexPayslips().FindReimbursementByPeriod()")
 	}
 
-	var (
-		payslipDataList  []entity.PayslipData
-		totalTakeHomePay int64
-	)
+	var payslipDataList []entity.PayslipData
 	for _, user := range users.List {
 		payslips, found := payslips.Mapped[user.ID]
 		if !found {
@@ -463,11 +462,20 @@ func (u *payrollUseCase) ListPayslips(ctx context.Context, authCredential authCr
 		}
 
 		payslipDataList = append(payslipDataList, payslipData)
-		totalTakeHomePay += payslip.TotalTakeHome
 	}
 
-	payslipsData.TotalTakeHome = totalTakeHomePay
-	payslipsData.PayslipsData = payslipDataList
+	additionalData := resource.Parameter.GetAdditionalData()
+	listPayslipMetadata := additionalData.(entity.ListPayslipMetadata)
+	resource.SetResult(resourceful.Result[string, dtos.PayslipDataResponse]{
+		PaginationResult: dtos.NewListPayslipResponse(payslipDataList),
+		IDs:              listPayslipMetadata.IDs,
+	})
 
-	return payslipsData, nil
+	listPayslipMetadata.Count = int64(len(payslipDataList))
+	listPayslipMetadata.Page = resource.Parameter.Page.MustGet()
+	listPayslipMetadata.TotalPage = int64(math.Ceil(float64(listPayslipMetadata.TotalCount) / float64(resource.Parameter.Limit.MustGet())))
+
+	resource.SetMetadata(listPayslipMetadata)
+
+	return resource, nil
 }

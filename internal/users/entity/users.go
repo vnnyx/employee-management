@@ -2,8 +2,6 @@ package entity
 
 import (
 	"time"
-
-	"github.com/vnnyx/employee-management/pkg/resourceful"
 )
 
 type User struct {
@@ -31,7 +29,6 @@ type MappedOptions struct {
 
 type FindUserOptions struct {
 	PessimisticLock bool
-	*resourceful.CursorParameter
 	*MappedOptions
 }
 

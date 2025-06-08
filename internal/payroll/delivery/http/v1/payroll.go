@@ -9,6 +9,7 @@ import (
 	"github.com/vnnyx/employee-management/internal/dtos"
 	"github.com/vnnyx/employee-management/internal/payroll"
 	"github.com/vnnyx/employee-management/pkg/observability/instrumentation"
+	"github.com/vnnyx/employee-management/pkg/resourceful"
 )
 
 type PayrollHandler struct {
@@ -95,15 +96,27 @@ func (h *PayrollHandler) ListPayslips(c *fiber.Ctx) error {
 		return errors.Wrap(err, "PayrollHandler().ListPayslips().c.ParamsParser()")
 	}
 
-	data, err := h.uc.ListPayslips(ctx, authCredential, param.PayrollID.String())
+	var request dtos.ListPayslipsRequest
+	if err := c.QueryParser(&request); err != nil {
+		return errors.Wrap(err, "PayrollHandler().ListPayslips().c.QueryParser()")
+	}
+
+	decodedCursor, err := resourceful.DecodeCursor(request.Cursor)
+	if err != nil {
+		return errors.Wrap(err, "PayrollHandler().ListPayslips().resourceful.DecodeCursor()")
+	}
+
+	resourceful := resourceful.NewResource[string, dtos.PayslipDataResponse](&resourceful.Parameter{
+		Limit:  request.Limit,
+		Page:   request.Page,
+		Mode:   resourceful.Mode(request.Mode.GetOrDefault("offset")),
+		Cursor: decodedCursor,
+	})
+
+	data, err := h.uc.ListPayslips(ctx, authCredential, param.PayrollID.String(), resourceful)
 	if err != nil {
 		return errors.Wrap(err, "PayrollHandler().ListPayslips().uc.ListPayslips()")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(
-		dtos.Response{
-			RequestID: authCredential.RequestID,
-			Data:      data,
-		},
-	)
+	return c.Status(fiber.StatusOK).JSON(data.Response())
 }

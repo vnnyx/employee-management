@@ -142,7 +142,7 @@ SELECT
 	updated_by,
 	ip_address
 FROM payslips
-WHERE payroll_id = $1
+WHERE payroll_id = ?
 `
 
 const findPayrollByIDQuery = `
